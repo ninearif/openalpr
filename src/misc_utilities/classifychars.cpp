@@ -61,7 +61,7 @@ const int LEFT_ARROW_KEY = 1113937;
 const int RIGHT_ARROW_KEY = 1113939;
 
 const int DOWN_ARROW_KEY = 1113940;
-const int UP_ARROW_KEY= 1113938;
+const int UP_ARROW_KEY = 1113938;
 
 const int ENTER_KEY_ONE = 1048586;
 const int ENTER_KEY_TWO = 1048586;
@@ -74,9 +74,10 @@ const int ESCAPE_KEY = 27;
 const int DASHBOARD_COLUMNS = 3;
 
 void showDashboard(vector<Mat> images, vector<bool> selectedImages, int selectedIndex);
+
 vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string state);
 
-int main( int argc, const char** argv )
+int main(int argc, const char** argv)
 {
   string country;
   string inDir;
@@ -84,7 +85,7 @@ int main( int argc, const char** argv )
   Mat frame;
 
   //Check if user specify image to process
-  if(argc == 4)
+  if (argc == 4)
   {
     country = argv[1];
     inDir = argv[2];
@@ -92,8 +93,8 @@ int main( int argc, const char** argv )
   }
   else
   {
-    printf("Use:\n\t%s country indirectory outdirectory\n",argv[0]);
-    printf("Ex: \n\t%s eu ./pics/ ./out\n",argv[0]);
+    printf("Use:\n\t%s country indirectory outdirectory\n", argv[0]);
+    printf("Ex: \n\t%s eu ./pics/ ./out\n", argv[0]);
     return 0;
   }
 
@@ -102,7 +103,7 @@ int main( int argc, const char** argv )
     printf("Output dir does not exist\n");
     return 0;
   }
-  
+
   if (DirectoryExists(inDir.c_str()) == false)
   {
     printf("Input dir does not exist\n");
@@ -130,23 +131,23 @@ int main( int argc, const char** argv )
 
   vector<string> files = getFilesInDir(inDir.c_str());
 
-  sort( files.begin(), files.end(), stringCompare );
+  sort(files.begin(), files.end(), stringCompare);
 
-  for (int i = 0; i< files.size(); i++)
+  for (int i = 0; i < files.size(); i ++)
   {
     if (hasEnding(files[i], ".png") || hasEnding(files[i], ".jpg"))
     {
       string fullpath = inDir + "/" + files[i];
       cout << fullpath << endl;
-      frame = imread( fullpath.c_str() );
-      if(frame.data == NULL)
+      frame = imread(fullpath.c_str());
+      if (frame.data == NULL)
       {
         cout << "Unable to read license plate: " << fullpath << endl;
         continue;
       }
       resize(frame, frame, Size(config.ocrImageWidthPx, config.ocrImageHeightPx));
 
-      imshow ("Original", frame);
+      imshow("Original", frame);
 
       PipelineData pipeline_data(frame, Rect(0, 0, frame.cols, frame.rows), &config);
       cvtColor(frame, frame, CV_BGR2GRAY);
@@ -158,10 +159,10 @@ int main( int argc, const char** argv )
       string statecodestr(statecode);
 
       CharacterAnalysis regionizer(&pipeline_data);
-      
+
       if (pipeline_data.plate_inverted)
         bitwise_not(pipeline_data.crop_gray, pipeline_data.crop_gray);
-      
+
       CharacterSegmenter charSegmenter(&pipeline_data);
 
       //ocr.cleanCharRegions(charSegmenter.thresholds, charSegmenter.characters);
@@ -171,32 +172,32 @@ int main( int argc, const char** argv )
       cout << "OCR results: " << ocr.postProcessor.bestChars << endl;
 
       vector<bool> selectedBoxes(pipeline_data.thresholds.size());
-      for (int z = 0; z < pipeline_data.thresholds.size(); z++)
+      for (int z = 0; z < pipeline_data.thresholds.size(); z ++)
         selectedBoxes[z] = false;
 
       int curDashboardSelection = 0;
 
       vector<string> humanInputs(pipeline_data.charRegionsFlat.size());
 
-      for (int z = 0; z < pipeline_data.charRegionsFlat.size(); z++)
+      for (int z = 0; z < pipeline_data.charRegionsFlat.size(); z ++)
         humanInputs[z] = SPACE;
 
       showDashboard(pipeline_data.thresholds, selectedBoxes, 0);
 
       int waitkey = waitKey(50);
 
-      while ((char) waitkey != 'n' && (char) waitkey != 'p')	 // Next image
+      while ((char) waitkey != 'n' && (char) waitkey != 'p')   // Next image
       {
         if (waitkey == LEFT_ARROW_KEY) // left arrow key
         {
           if (curDashboardSelection > 0)
-            curDashboardSelection--;
+            curDashboardSelection --;
           showDashboard(pipeline_data.thresholds, selectedBoxes, curDashboardSelection);
         }
         else if (waitkey == RIGHT_ARROW_KEY) // right arrow key
         {
           if (curDashboardSelection < pipeline_data.thresholds.size() - 1)
-            curDashboardSelection++;
+            curDashboardSelection ++;
           showDashboard(pipeline_data.thresholds, selectedBoxes, curDashboardSelection);
         }
         else if (waitkey == DOWN_ARROW_KEY)
@@ -213,28 +214,29 @@ int main( int argc, const char** argv )
         }
         else if (waitkey == ENTER_KEY_ONE || waitkey == ENTER_KEY_TWO)
         {
-    if (pipeline_data.charRegionsFlat.size() > 0)
-    {
-      vector<string> tempdata = showCharSelection(pipeline_data.thresholds[curDashboardSelection], pipeline_data.charRegionsFlat, statecodestr);
-      for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c++)
-  humanInputs[c] = tempdata[c];
-    }
-    else
-    {
-      cout << "No character regions available in this image" << endl;
-    }
+          if (pipeline_data.charRegionsFlat.size() > 0)
+          {
+            vector<string> tempdata = showCharSelection(pipeline_data.thresholds[curDashboardSelection],
+                                                         pipeline_data.charRegionsFlat, statecodestr);
+            for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c ++)
+              humanInputs[c] = tempdata[c];
+          }
+          else
+          {
+            cout << "No character regions available in this image" << endl;
+          }
         }
         else if ((char) waitkey == SPACE_KEY)
         {
-          selectedBoxes[curDashboardSelection] = !selectedBoxes[curDashboardSelection];
+          selectedBoxes[curDashboardSelection] = ! selectedBoxes[curDashboardSelection];
           showDashboard(pipeline_data.thresholds, selectedBoxes, curDashboardSelection);
         }
-        else if ((char) waitkey == 's' || (char) waitkey == 'S' )
+        else if ((char) waitkey == 's' || (char) waitkey == 'S')
         {
 
           bool somethingSelected = false;
           bool chardataTagged = false;
-          for (int c = 0; c < pipeline_data.thresholds.size(); c++)
+          for (int c = 0; c < pipeline_data.thresholds.size(); c ++)
           {
             if (selectedBoxes[c])
             {
@@ -242,7 +244,7 @@ int main( int argc, const char** argv )
               break;
             }
           }
-          for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c++)
+          for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c ++)
           {
             if (humanInputs[c] != SPACE)
             {
@@ -253,23 +255,23 @@ int main( int argc, const char** argv )
           // Save
           if (somethingSelected && chardataTagged)
           {
-            for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c++)
+            for (int c = 0; c < pipeline_data.charRegionsFlat.size(); c ++)
             {
               if (humanInputs[c] == SPACE)
                 continue;
 
-              for (int t = 0; t < pipeline_data.thresholds.size(); t++)
+              for (int t = 0; t < pipeline_data.thresholds.size(); t ++)
               {
                 if (selectedBoxes[t] == false)
                   continue;
 
                 stringstream filename;
-                
+
                 // Ensure that crop rect does not extend beyond extent of image.
-                cv::Rect char_region = expandRect(pipeline_data.charRegionsFlat[c], 0, 0, 
-                        pipeline_data.thresholds[t].cols,
-                        pipeline_data.thresholds[t].rows);
-                
+                cv::Rect char_region = expandRect(pipeline_data.charRegionsFlat[c], 0, 0,
+                                                  pipeline_data.thresholds[t].cols,
+                                                  pipeline_data.thresholds[t].rows);
+
                 Mat cropped = pipeline_data.thresholds[t](char_region);
                 filename << outDir << "/" << humanInputs[c] << "-" << t << "-" << files[i];
                 imwrite(filename.str(), cropped);
@@ -290,13 +292,13 @@ int main( int argc, const char** argv )
         }
 
         waitkey = waitKey(50);
-    //std::cout << "key: " << (int) waitkey << std::endl;
+        //std::cout << "key: " << (int) waitkey << std::endl;
       }
 
       if ((char) waitkey == 'p')
         i = i - 2;
-      if (i < -1)
-        i = -1;
+      if (i < - 1)
+        i = - 1;
     }
   }
 }
@@ -308,20 +310,20 @@ void showDashboard(vector<Mat> images, vector<bool> selectedImages, int selected
   if (selectedIndex < 0)
     selectedIndex = 0;
   if (selectedIndex >= images.size())
-    selectedIndex = images.size() -1;
+    selectedIndex = images.size() - 1;
 
-  for (int i = 0; i < images.size(); i++)
+  for (int i = 0; i < images.size(); i ++)
   {
     Mat imgCopy(images[i].size(), images[i].type());
     images[i].copyTo(imgCopy);
     cvtColor(imgCopy, imgCopy, CV_GRAY2BGR);
     if (i == selectedIndex)
     {
-      rectangle(imgCopy, Point(1,1), Point(imgCopy.size().width - 1, imgCopy.size().height -1), Scalar(0, 255, 0), 1);
+      rectangle(imgCopy, Point(1, 1), Point(imgCopy.size().width - 1, imgCopy.size().height - 1), Scalar(0, 255, 0), 1);
     }
     if (selectedImages[i])
     {
-      rectangle(imgCopy, Point(2,2), Point(imgCopy.size().width - 2, imgCopy.size().height -2), Scalar(255, 0, 0), 1);
+      rectangle(imgCopy, Point(2, 2), Point(imgCopy.size().width - 2, imgCopy.size().height - 2), Scalar(255, 0, 0), 1);
     }
 
     vecCopy.push_back(imgCopy);
@@ -337,11 +339,11 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
   int curCharIdx = 0;
 
   vector<string> humanInputs(charRegions.size());
-  for (int i = 0; i < charRegions.size(); i++)
+  for (int i = 0; i < charRegions.size(); i ++)
     humanInputs[i] = SPACE;
 
   RegexRule regex_rule("", "[\\pL\\pN]", "", "");
-  
+
   int16_t waitkey = waitKey(50);
   while (waitkey != ENTER_KEY_ONE && waitkey != ENTER_KEY_TWO && waitkey != ESCAPE_KEY)
   {
@@ -354,19 +356,19 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
     imshow("Character selector", imgCopy);
 
     if ((char) waitkey == LEFT_ARROW_KEY)
-      curCharIdx--;
+      curCharIdx --;
     else if ((char) waitkey == RIGHT_ARROW_KEY)
-      curCharIdx++;
+      curCharIdx ++;
     else if (waitkey == SPACE_KEY)
     {
       humanInputs[curCharIdx] = " ";
-      curCharIdx++;
+      curCharIdx ++;
     }
     else if (waitkey > 0 && regex_rule.match(utf8chr(waitkey))) // Verify that it's an actual character
     {
       // Save the character to disk
       humanInputs[curCharIdx] = utf8chr(waitkey);
-      curCharIdx++;
+      curCharIdx ++;
 
       if (curCharIdx >= charRegions.size())
       {
@@ -378,7 +380,7 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
     if (curCharIdx < 0)
       curCharIdx = 0;
     if (curCharIdx >= charRegions.size())
-      curCharIdx = charRegions.size() -1;
+      curCharIdx = charRegions.size() - 1;
 
     waitkey = waitKey(50);
   }
@@ -386,7 +388,7 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
   if (waitkey == ENTER_KEY_ONE || waitkey == ENTER_KEY_TWO)
   {
     // Save all the inputs
-    for (int i = 0; i < charRegions.size(); i++)
+    for (int i = 0; i < charRegions.size(); i ++)
     {
       if (humanInputs[i] != SPACE)
         cout << "Tagged " << state << " char code: '" << humanInputs[i] << "' at char position: " << i << endl;
