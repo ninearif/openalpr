@@ -82,6 +82,11 @@ const string SPACE = " ";
 const int SPACE_KEY = 32;
 const int ESCAPE_KEY = 27;
 
+//For Thai keyboard layout
+const int THAI_KEYMAP_ADJ_VALUE = 96;
+const int FIRST_LET = 3489;
+const int LAST_LET = 3634;
+
 const int DASHBOARD_COLUMNS = 3;
 
 void showDashboard(vector<Mat> images, vector<bool> selectedImages, int selectedIndex);
@@ -379,6 +384,21 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
       humanInputs[curCharIdx] = " ";
       curCharIdx++;
     }
+
+    if (waitkey >= FIRST_LET && waitkey <= LAST_LET)
+    {
+      waitkey += THAI_KEYMAP_ADJ_VALUE;
+
+      // Save the character to disk
+      humanInputs[curCharIdx] = utf8chr(waitkey);
+      curCharIdx++;
+
+      if (curCharIdx >= charRegions.size())
+      {
+        waitkey = (int16_t) ENTER_KEY_ONE;
+        break;
+      }
+    }
     else if (waitkey > 0 && regex_rule.match(utf8chr(waitkey))) // Verify that it's an actual character
     {
       // Save the character to disk
@@ -391,7 +411,6 @@ vector<string> showCharSelection(Mat image, vector<Rect> charRegions, string sta
         break;
       }
     }
-
     if (curCharIdx < 0)
       curCharIdx = 0;
     if (curCharIdx >= charRegions.size())
