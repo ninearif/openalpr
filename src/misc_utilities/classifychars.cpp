@@ -57,15 +57,15 @@ const int UP_ARROW_KEY = 2490368;
 const int ENTER_KEY_ONE = 13;
 const int ENTER_KEY_TWO = 10;
 
-#elif __linux__
-const int LEFT_ARROW_KEY = 65361;
-const int RIGHT_ARROW_KEY = 65363;
-
-const int DOWN_ARROW_KEY = 65364;
-const int UP_ARROW_KEY = 65362;
-
-const int ENTER_KEY_ONE = 13;
-const int ENTER_KEY_TWO = 10;
+//#elif __linux__
+//const int LEFT_ARROW_KEY = 65361;
+//const int RIGHT_ARROW_KEY = 65363;
+//
+//const int DOWN_ARROW_KEY = 65364;
+//const int UP_ARROW_KEY = 65362;
+//
+//const int ENTER_KEY_ONE = 13;
+//const int ENTER_KEY_TWO = 10;
 
 #else
 const int LEFT_ARROW_KEY = 1113937;
